@@ -1,0 +1,3 @@
+/Users/chengxiaoqian/Desktop/COMP51915-2/build/CMakeFiles/COMP51915.dir
+/Users/chengxiaoqian/Desktop/COMP51915-2/build/CMakeFiles/edit_cache.dir
+/Users/chengxiaoqian/Desktop/COMP51915-2/build/CMakeFiles/rebuild_cache.dir
