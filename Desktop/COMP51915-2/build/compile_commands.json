@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/Users/chengxiaoqian/Desktop/COMP51915-2/build",
-  "command": "/usr/bin/clang++   -g -std=gnu++11 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.0.sdk -mmacosx-version-min=12.5 -o CMakeFiles/COMP51915.dir/gs.cpp.o -c /Users/chengxiaoqian/Desktop/COMP51915-2/gs.cpp",
-  "file": "/Users/chengxiaoqian/Desktop/COMP51915-2/gs.cpp",
-  "output": "CMakeFiles/COMP51915.dir/gs.cpp.o"
-}
-]
