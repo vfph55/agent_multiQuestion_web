@@ -23,7 +23,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 KIMI_API_KEY = os.getenv("KIMI_API_KEY")
 
 # 默认 Kimi API Key（如果不设置环境变量则使用此默认值）
-DEFAULT_KIMI_API_KEY = "sk-ggJmGVQqRpSIIlNxojXNjmsq3MoWlnFo2OGiuCiLAFddm7gS"
+DEFAULT_KIMI_API_KEY = ""
 
 # 确定使用哪个 API
 # 优先级：环境变量 > 默认值
@@ -53,7 +53,7 @@ else:
 
 # 百度 AI 搜索 API 配置
 # 默认 API Key（如果不设置环境变量则使用此默认值）
-DEFAULT_BAIDU_API_KEY = "bce-v3/ALTAK-ORrOi8rIakmsqdvPz7jqL/f182636d463e530fd831cd491ce4c19cbe9f6f40"
+DEFAULT_BAIDU_API_KEY = ""
 
 BAIDU_API_KEY = os.getenv("BAIDU_API_KEY") or DEFAULT_BAIDU_API_KEY
 
