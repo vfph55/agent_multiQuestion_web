@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZURU Melon 知识问答</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .session-info {
+            background: #f0f4ff;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .session-info .label {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .session-info .id {
+            color: #666;
+            font-family: monospace;
+        }
+
+        .session-info button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .session-info button:hover {
+            background: #5a6fd6;
+        }
+
+        .chat-area {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #fafafa;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .chat-area.show {
+            display: block;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.assistant {
+            text-align: left;
+        }
+
+        .message .bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* 卡片式答案样式 */
+        .answer-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 10px;
+        }
+
+        .answer-section {
+            margin-bottom: 16px;
+        }
+
+        .answer-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 标题样式 */
+        .section-heading {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8eaff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-heading::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        /* 段落样式 */
+        .section-paragraph {
+            color: #444;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        /* 列表样式 */
+        .section-list {
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .section-list li {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            color: #555;
+            line-height: 1.6;
+            position: relative;
+            padding-left: 36px;
+        }
+
+        .section-list.ul li::before {
+            content: '•';
+            position: absolute;
+            left: 14px;
+            color: #667eea;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .section-list.ol {
+            counter-reset: item;
+        }
+
+        .section-list.ol li {
+            counter-increment: item;
+        }
+
+        .section-list.ol li::before {
+            content: counter(item);
+            position: absolute;
+            left: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 代码块样式 */
+        .section-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* 内联样式 */
+        .answer-section strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .answer-section code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #c62828;
+            font-size: 14px;
+        }
+
+        .answer-section a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .answer-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* 来源标签 */
+        .source-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .source-badge.rag {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .source-badge.search {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .source-badge.llm {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .message .meta {
+            font-size: 11px;
+            color: #999;
+            margin-top: 6px;
+            padding-left: 10px;
+        }
+
+        .input-area {
+            margin-bottom: 15px;
+        }
+
+        .input-area textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-area {
+            text-align: center;
+        }
+
+        .button-area button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .button-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button-area button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            display: none;
+            margin-top: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ZURU Melon 知识问答</h1>
+            <p>支持多轮对话，自动识别公司知识 / 实时信息 / 通用问题</p>
+        </div>
+
+        <div class="session-info" id="sessionInfo" style="display: none;">
+            <span>
+                <span class="label">当前会话:</span>
+                <span class="id" id="sessionId">-</span>
+            </span>
+            <button onclick="newSession()">🆕 新会话</button>
+        </div>
+
+        <div class="chat-area" id="chatArea"></div>
+
+        <div class="input-area">
+            <textarea id="question" placeholder="请输入你的问题...例如：公司的年假是多少天？"></textarea>
+        </div>
+
+        <div class="button-area">
+            <button id="submit" onclick="askQuestion()">发送</button>
+        </div>
+
+        <div class="loading" id="loading">正在思考中...</div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+
+        function getSourceBadge(source, questionType) {
+            const badges = {
+                'rag': { text: '知识库', class: 'rag' },
+                'search': { text: '实时搜索', class: 'search' },
+                'llm': { text: '通用模型', class: 'llm' }
+            };
+            const badge = badges[source] || { text: '未知', class: '' };
+            return `<span class="source-badge ${badge.class}">${badge.text}</span>`;
+        }
+
+        function renderStructuredAnswer(structured) {
+            if (!structured || !structured.sections) {
+                return '<div class="answer-card"><p>暂无内容</p></div>';
+            }
+
+            let html = '<div class="answer-card">';
+
+            structured.sections.forEach(section => {
+                switch (section.type) {
+                    case 'heading':
+                        html += `<div class="answer-section section-heading">${escapeHtml(section.content)}</div>`;
+                        break;
+
+                    case 'paragraph':
+                        html += `<div class="answer-section section-paragraph">${renderInline(section.content)}</div>`;
+                        break;
+
+                    case 'list':
+                        const listClass = section.list_type === 'ol' ? 'ol' : 'ul';
+                        html += `<ul class="section-list ${listClass}">`;
+                        section.items.forEach(item => {
+                            html += `<li>${renderInline(item)}</li>`;
+                        });
+                        html += '</ul>';
+                        break;
+
+                    case 'code':
+                        html += `<pre class="section-code">${escapeHtml(section.content)}</pre>`;
+                        break;
+                }
+            });
+
+            html += '</div>';
+            return html;
+        }
+
+        function renderInline(text) {
+            // 处理行内格式
+            return text
+                .replace(/<strong>([^<]+)<\/strong>/g, '<strong>$1</strong>')
+                .replace(/<code>([^<]+)<\/code>/g, '<code>$1</code>')
+                .replace(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g, '<a href="$1" target="_blank">$2</a>');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addMessage(role, content, source = null, questionType = null, structured = null) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            let metaHtml = '';
+            if (role === 'assistant' && source) {
+                metaHtml = `<div class="meta">${getSourceBadge(source, questionType)}</div>`;
+            }
+
+            let contentHtml;
+            if (role === 'assistant' && structured) {
+                contentHtml = renderStructuredAnswer(structured);
+            } else {
+                contentHtml = `<div class="bubble">${escapeHtml(content)}</div>`;
+            }
+
+            messageDiv.innerHTML = contentHtml + metaHtml;
+
+            chatArea.appendChild(messageDiv);
+            chatArea.classList.add('show');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function updateSessionInfo() {
+            const sessionInfo = document.getElementById('sessionInfo');
+            const sessionId = document.getElementById('sessionId');
+
+            if (currentSessionId) {
+                sessionId.textContent = currentSessionId;
+                sessionInfo.style.display = 'flex';
+            } else {
+                sessionInfo.style.display = 'none';
+            }
+        }
+
+        function newSession() {
+            currentSessionId = null;
+            document.getElementById('chatArea').innerHTML = '';
+            document.getElementById('chatArea').classList.remove('show');
+            updateSessionInfo();
+            document.getElementById('question').focus();
+        }
+
+        async function askQuestion() {
+            const questionInput = document.getElementById('question');
+            const question = questionInput.value.trim();
+            const submitBtn = document.getElementById('submit');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+
+            if (!question) {
+                alert('请输入问题！');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.add('show');
+            error.classList.remove('show');
+
+            addMessage('user', question);
+            questionInput.value = '';
+
+            try {
+                const requestBody = { question: question };
+                if (currentSessionId) {
+                    requestBody.session_id = currentSessionId;
+                }
+
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || '服务器错误');
+                }
+
+                const data = await response.json();
+
+                currentSessionId = data.session_id;
+                updateSessionInfo();
+
+                addMessage('assistant', data.answer, data.source, data.question_type, data.structured);
+
+            } catch (err) {
+                error.textContent = '❌ ' + err.message;
+                error.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        document.getElementById('question').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html>
