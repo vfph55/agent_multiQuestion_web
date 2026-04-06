@@ -335,10 +335,3 @@ VIOLATION_MESSAGES = {
 
 修改 `src/embeddings.py`，将 `FAISS` 替换为 `Milvus` / `Pinecone` / `Chroma`。
 
-## 许可证
-
-MIT License
-
-## 贡献
-
-欢迎提交 Issue 和 PR！
